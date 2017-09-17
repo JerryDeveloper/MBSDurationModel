@@ -4,5 +4,7 @@ setup.py
 brmbs\__init__.py
 brmbs\data\DataLoader.py
 brmbs\data\__init__.py
+brmbs\model\OrthogonalRegression.py
+brmbs\model\__init__.py
 brmbs\preprocessing\IssuanceProcessor.py
 brmbs\preprocessing\__init__.py

@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
   name = 'brmbs',
-  packages = ['brmbs', 'brmbs.data', 'brmbs.preprocessing'], 
-  version = '0.8',
+  packages = ['brmbs', 'brmbs.data', 'brmbs.preprocessing', 'brmbs.model'], 
+  version = '0.9',
   description = 'MBS Securities Duration Estimation Model',
   author = 'A group of MFE students',
   author_email = 'jerry.xue.dev@gmail.com',
