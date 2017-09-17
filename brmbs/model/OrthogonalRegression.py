@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import datetime as dt
+import statsmodels.api as sm
 
 import rpy2
 from rpy2.robjects.packages import importr
