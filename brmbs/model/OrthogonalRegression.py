@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import datetime as dt
 
+import rpy2
+from rpy2.robjects.packages import importr
+from rpy2.robjects import pandas2ri
+from rpy2.robjects import r
+pandas2ri.activate()
+
 def norm_base(x):
     return (2*x-np.min(x)-np.max(x))/(np.max(x)-np.min(x))
 	
