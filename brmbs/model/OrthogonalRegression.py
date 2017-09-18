@@ -33,11 +33,14 @@ def fitting_OLS(reg_Y,reg_X):
     res = mod.fit()
     return res.params
 	
-def duration_from_ortho_poly_fit(X, Y, deg, rate):
-    
-    coef = np.array(fitting_OLS(Y, X))
-    
-    delta = 0.0001
+def duration_from_ortho_poly_fit(X, Y, deg, rate, delta = 0.0001, X_transformed = True, calc_derivative = False):
+    if not X_transformed:
+        reg_X, a, b = orth_base(norm_base(X), deg)
+    else:
+        reg_X = X
+
+    coef = np.array(fitting_OLS(Y, reg_X))
+
     rate_plus = rate + delta
     rate_minus = rate - delta
     
@@ -46,11 +49,13 @@ def duration_from_ortho_poly_fit(X, Y, deg, rate):
     
     price_plus = np.sum(coef * x_plus)
     price_minus = np.sum(coef * x_minus)
+
+    sign = (1 if calc_derivative else -1)
     
-    return - (price_plus - price_minus) / (delta * 2)
+    return sign * (price_plus - price_minus) / (delta * 2)
 
 stats = importr('stats')
-def duration_from_r_poly_fit(X, Y, deg, rate):
+def duration_from_r_poly_fit(X, Y, deg, rate, delta = 0.001, X_transformed = True, calc_derivative = False):
     
     new_Y = pandas2ri.py2ri(Y)
     new_X = pandas2ri.py2ri(X)
@@ -64,16 +69,15 @@ def duration_from_r_poly_fit(X, Y, deg, rate):
     
     coef = np.array(fitting_OLS(Y, X))
     
-    delta = 0.001
     rate_plus = rate + delta
     rate_minus = rate - delta
     
     price_plus = np.sum(coef * rate_plus**np.arange(deg + 1))
     price_minus = np.sum(coef * rate_minus**np.arange(deg + 1))
     
-    return - (price_plus - price_minus) / (delta * 2)
+    return (1 if calc_derivative else -1) * (price_plus - price_minus) / (delta * 2)
 
-def regression_poly_wind_V2(wind, X, Y, deg, ploy_fit_func, rate):
+def regression_poly_wind(wind, X, Y, deg, ploy_fit_func, X_transformed = True, calc_derivative = False):
     if(len(X) != len(Y)):
         raise Exception('X and Y should have same length')
     if(len(X) < wind):
@@ -82,11 +86,11 @@ def regression_poly_wind_V2(wind, X, Y, deg, ploy_fit_func, rate):
     beta = []
     pure_X = X
     pure_Y = Y
-    
+
     for i in range((len(X)-wind)):
         reg_X = pure_X[i:i + wind]
         reg_Y = pure_Y[i:i + wind]
-        beta.append(ploy_fit_func(reg_X, reg_Y, deg, rate))
+        beta.append(ploy_fit_func(reg_X, reg_Y, deg, reg_X[-1], X_transformed = X_transformed, calc_derivative = calc_derivative))
         
     return beta
 	
@@ -120,13 +124,8 @@ def calc_duration_method_1(collapse_without_order, TBAs):
 			rates = norm_base(rates_raw)
 			# transform X to orthogonal basis
 			reg_X, a, b = orth_base(rates, degree)
-			betas = regression_poly_wind_V2(window, reg_X, dat[reg_start_date:p.endDate]['price'], degree, duration_from_ortho_poly_fit, rates[len(rates) - 1])
+			betas = regression_poly_wind(window, reg_X, dat[reg_start_date:p.endDate]['price'], degree, duration_from_ortho_poly_fit)
 			cur_list.append(pd.DataFrame({'Duration': betas}, index = rates.index[window:]))
-			
-			# version 2 of poly fit: R package
-			
-			#betas = regression_poly_wind_V2(window, rates_raw, dat[reg_start_date:p.endDate]['price'], degree, duration_from_r_poly_fit, rates_raw[len(rates_raw) - 1])
-			#print(len(betas))
 			
 			cur_list.append(pd.DataFrame({'Duration': betas}, index = rates_raw.index[window:]))
 			
