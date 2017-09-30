@@ -3,12 +3,6 @@ import pandas as pd
 import datetime as dt
 import statsmodels.api as sm
 
-import rpy2
-from rpy2.robjects.packages import importr
-from rpy2.robjects import pandas2ri
-from rpy2.robjects import r
-pandas2ri.activate()
-
 def norm_base(x):
     return (2*x-np.min(x)-np.max(x))/(np.max(x)-np.min(x))
 	
@@ -53,29 +47,6 @@ def duration_from_ortho_poly_fit(X, Y, deg, rate, delta = 0.0001, X_transformed 
     sign = (1 if calc_derivative else -1)
     
     return sign * (price_plus - price_minus) / (delta * 2)
-
-stats = importr('stats')
-def duration_from_r_poly_fit(X, Y, deg, rate, delta = 0.001, X_transformed = True, calc_derivative = False):
-    
-    new_Y = pandas2ri.py2ri(Y)
-    new_X = pandas2ri.py2ri(X)
-
-    poly = stats.poly(new_X, degree=deg)
-    df = pd.DataFrame(np.matrix(poly))
-    new_df=pandas2ri.py2ri(df)
-
-    ls_fit = r.lsfit(new_df, new_Y)
-    coeff = np.array(ls_fit[0])
-    
-    coef = np.array(fitting_OLS(Y, X))
-    
-    rate_plus = rate + delta
-    rate_minus = rate - delta
-    
-    price_plus = np.sum(coef * rate_plus**np.arange(deg + 1))
-    price_minus = np.sum(coef * rate_minus**np.arange(deg + 1))
-    
-    return (1 if calc_derivative else -1) * (price_plus - price_minus) / (delta * 2)
 
 def regression_poly_wind(wind, X, Y, deg, ploy_fit_func, X_transformed = True, calc_derivative = False):
     if(len(X) != len(Y)):

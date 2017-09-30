@@ -8,3 +8,6 @@ brmbs\model\OrthogonalRegression.py
 brmbs\model\__init__.py
 brmbs\preprocessing\IssuanceProcessor.py
 brmbs\preprocessing\__init__.py
+brmbs\simulation\DataGenerator.py
+brmbs\simulation\PolynomialSimulation.py
+brmbs\simulation\__init__.py
